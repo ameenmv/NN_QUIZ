@@ -961,6 +961,23 @@
       }
     ];
 
+    const repeatedQuestions = [];
+    examData.forEach(sec => {
+      sec.questions.forEach(q => {
+        if (q.rep || (q.s && q.s.length > 1) || q.sim) {
+          repeatedQuestions.push({ ...q });
+        }
+      });
+    });
+    if (repeatedQuestions.length > 0) {
+      examData.push({
+        lecture: "Repeated Exams",
+        title: "Most Repeated & Similar Questions",
+        topic: "A specialized section containing the most critical and frequently repeated questions across various previous exams.",
+        questions: repeatedQuestions
+      });
+    }
+
     const state = { answers: {}, currentQ: 0 };
     const letters = ["A", "B", "C", "D"];
 
@@ -980,7 +997,10 @@
     function render() {
       const nav = document.getElementById("lectureNav");
       const exam = document.getElementById("exam");
-      nav.innerHTML = examData.map((sec, i) => `<a href="#" onclick="goToLecture(${i}); return false;">Lecture ${sec.lecture}</a>`).join("");
+      nav.innerHTML = examData.map((sec, i) => {
+        const label = String(sec.lecture).includes("Repeated") ? sec.lecture : `Lecture ${sec.lecture}`;
+        return `<a href="#" onclick="goToLecture(${i}); return false;">${label}</a>`;
+      }).join("");
       let globalIndex = 0;
       exam.innerHTML = examData.map(sec => {
         const cards = sec.questions.map(q => {
@@ -1054,6 +1074,7 @@
         const y = sect.getBoundingClientRect().top + window.scrollY - 100;
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
+      updateProgress();
     }
 
     function nextQ() {
@@ -1197,8 +1218,9 @@
       }
       const pctLocal = Math.round((answeredLocal / info.totalLocal) * 100);
 
+      const lecName = String(info.lectureData.lecture).includes("Repeated") ? info.lectureData.lecture : `Lecture ${info.lectureData.lecture}`;
       document.getElementById("progressFill").style.width = pctLocal + "%";
-      document.getElementById("progressText").textContent = `Lecture ${info.lectureData.lecture} Progress: Answered ${answeredLocal} of ${info.totalLocal} questions (${pctLocal}%)`;
+      document.getElementById("progressText").textContent = `${lecName} Progress: Answered ${answeredLocal} of ${info.totalLocal} questions (${pctLocal}%)`;
 
       const answeredGlobal = Object.keys(state.answers).length;
       document.getElementById("heroDone").textContent = answeredGlobal;
@@ -1270,11 +1292,13 @@
       document.getElementById("rUnanswered").textContent = unanswered;
       document.getElementById("scorePercent").textContent = pct + "%";
 
-      let msg = "Keep practicing this lecture.";
-      if (pct >= 90) msg = "Excellent! You mastered this lecture.";
+      let msg = "Keep practicing this section.";
+      if (pct >= 90) msg = "Excellent! You mastered this section.";
       else if (pct >= 75) msg = "Very good. Review your mistakes.";
       else if (pct >= 60) msg = "Good start. Revise this topic.";
-      document.getElementById("scoreMessage").textContent = `Lecture ${info.lectureData.lecture} Completed! ` + msg;
+      
+      const lecName = String(info.lectureData.lecture).includes("Repeated") ? info.lectureData.lecture : `Lecture ${info.lectureData.lecture}`;
+      document.getElementById("scoreMessage").textContent = `${lecName} Completed! ` + msg;
 
       const result = document.getElementById("result");
       result.classList.add("show");
