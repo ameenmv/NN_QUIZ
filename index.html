@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neural Networks Interactive Exam Model</title>
+  <!-- fixed: bipolar OR target answer is -1 -->
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary2: #8b5cf6;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --warn: #f59e0b;
+      --soft: #334155;
+      --border: #334155;
+      --shadow: 0 14px 35px rgba(0, 0, 0, .3);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, .15), transparent 34%),
+        radial-gradient(circle at top right, rgba(139, 92, 246, .15), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    header {
+      position: relative;
+      overflow: hidden;
+      padding: 34px 18px 24px;
+      background: linear-gradient(135deg, #020617, #1e3a8a 55%, #5b21b6);
+      color: white;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .4);
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      inset: auto -70px -130px auto;
+      width: 380px;
+      height: 380px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 50%;
+    }
+
+    .hero {
+      max-width: 1180px;
+      margin: auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 52px);
+      letter-spacing: -1px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #bfdbfe;
+      max-width: 850px;
+      font-size: 16px;
+    }
+
+    .stats-bar {
+      margin: 22px 0 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 16px;
+      padding: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px
+    }
+
+    .stat span {
+      font-size: 12px;
+      color: #bfdbfe
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 24px auto 80px;
+      padding: 0 18px;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15, 23, 42, .88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(51, 65, 85, .9);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .progress-shell {
+      height: 12px;
+      background: #334155;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--primary2));
+      border-radius: 999px;
+      transition: .35s ease;
+    }
+
+    .toolbar-meta {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 13px;
+      padding: 11px 14px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: .2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px)
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: white
+    }
+
+    .btn-light {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border)
+    }
+
+    .btn-danger {
+      background: #450a0a;
+      color: #fecdd3;
+      border: 1px solid #9f1239
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: #bfdbfe;
+      background: #1e3a8a;
+      border: 1px solid #1e40af;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .section {
+      display: none;
+      margin: 38px 0;
+      scroll-margin-top: 120px;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section-head {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(23px, 3.4vw, 36px);
+      color: #f8fafc;
+    }
+
+    .section-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .separator {
+      height: 2px;
+      margin: 36px auto 0;
+      width: 75%;
+      background: linear-gradient(90deg, transparent, #475569, transparent);
+    }
+
+    .question-card {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+      padding: 32px;
+      margin: 16px 0;
+      transition: .2s ease;
+    }
+
+    .question-card.active {
+      display: block;
+      animation: pop .4s ease;
+    }
+
+    .question-card:hover {
+      box-shadow: 0 14px 34px rgba(0, 0, 0, .3)
+    }
+
+    .question-card.repeated {
+      border: 2px solid #b45309;
+      background: linear-gradient(135deg, #451a03, #1e293b 48%);
+    }
+
+    .question-card.unanswered {
+      outline: 3px solid rgba(248, 113, 113, .3);
+    }
+
+    .q-top {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .q-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 0 16px;
+      line-height: 1.4;
+    }
+
+    .context-box {
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #0f172a;
+      border: 1px dashed #475569;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .context-box strong {
+      display: inline-block;
+      margin-bottom: 4px;
+      color: #f8fafc;
+    }
+
+    .source-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tag.ai {
+      background: #064e3b;
+      color: #6ee7b7;
+      border-color: #059669
+    }
+
+    .tag.repeat {
+      background: #451a03;
+      color: #fcd34d;
+      border-color: #b45309
+    }
+
+    .tag.similar {
+      background: #2e1065;
+      color: #c4b5fd;
+      border-color: #6d28d9
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .choice {
+      width: 100%;
+      text-align: left;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      font-weight: 650;
+      padding: 16px 20px;
+      min-height: 64px;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: .2s ease;
+    }
+
+    .letter {
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid #475569;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .choice.correct {
+      background: #064e3b;
+      border-color: #059669;
+      color: #86efac;
+    }
+
+    .choice.wrong {
+      background: #4c0519;
+      border-color: #be123c;
+      color: #fca5a5;
+    }
+
+    .choice.selected {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, .4);
+    }
+
+    .choice:disabled {
+      cursor: not-allowed;
+      opacity: 1;
+    }
+
+    .question-card.locked .choice:not(.selected):not(.correct) {
+      opacity: .72;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 12px;
+      border-radius: 14px;
+      padding: 11px 13px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .feedback.good {
+      display: block;
+      background: #064e3b;
+      color: #86efac;
+      border: 1px solid #059669
+    }
+
+    .feedback.bad {
+      display: block;
+      background: #4c0519;
+      color: #fca5a5;
+      border: 1px solid #be123c
+    }
+
+    #result {
+      display: none;
+      background: var(--card);
+      border-radius: 26px;
+      padding: 28px;
+      margin-top: 30px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      text-align: center;
+      animation: pop .55s ease both;
+    }
+
+    #result.show {
+      display: block
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .score {
+      font-size: clamp(44px, 8vw, 78px);
+      font-weight: 950;
+      margin: 6px 0;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .result-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .result-box strong {
+      display: block;
+      font-size: 24px
+    }
+
+    .float-top {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 90;
+      box-shadow: var(--shadow);
+    }
+
+    .exam-controls {
+      display: flex;
+      gap: 14px;
+      margin-top: 20px;
+      justify-content: space-between;
+    }
+
+    .exam-controls button {
+      flex: 1;
+      padding: 16px;
+      font-size: 18px;
+      border-radius: 16px;
+    }
+
+    .exam-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media(max-width:780px) {
+      .toolbar {
+        grid-template-columns: 1fr
+      }
+
+      .btns {
+        justify-content: stretch
+      }
+
+      .btns button {
+        flex: 1
+      }
+
+      .stats-bar,
+      .result-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+
+      .choices {
+        grid-template-columns: 1fr
+      }
+
+      .question-card {
+        padding: 16px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header id="top">
+    <div class="hero">
+      <h1>Neural Networks Interactive Exam Model</h1>
+      <p>Complete practice model organized by lecture, built from uploaded lecture materials and previous exam
+        questions. Choose answers to get instant feedback, then submit for your final score.</p>
+      <div class="stats-bar">
+        <div class="stat"><strong id="heroTotal">0</strong><span>Total questions</span></div>
+        <div class="stat"><strong>12</strong><span>Lecture sections</span></div>
+        <div class="stat"><strong>60</strong><span>AI practice questions</span></div>
+        <div class="stat"><strong id="heroDone">0</strong><span>Answered</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="toolbar">
+      <div>
+        <div class="progress-shell">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="toolbar-meta" id="progressText">Answered 0 of 0 questions</div>
+      </div>
+      <div class="btns">
+        <button class="btn-primary" id="submitBtn">Submit Exam</button>
+        <button class="btn-light" id="solveAllBtn">Solve All</button>
+        <button class="btn-light" id="unansweredBtn">Show Unanswered</button>
+        <button class="btn-danger" id="resetBtn">Reset / Retake</button>
+      </div>
+    </section>
+
+    <nav class="nav" id="lectureNav"></nav>
+    <div id="exam"></div>
+    <div class="exam-controls" id="examNav" style="display:none;">
+      <button class="btn-light" id="prevQBtn" onclick="prevQ()">Previous Question</button>
+      <button class="btn-danger" id="resetCurrentBtn" onclick="resetCurrentQuestion()">Reset Answer</button>
+      <button class="btn-primary" id="nextQBtn" onclick="nextQ()">Next Question</button>
+    </div>
+
+    <section id="result">
+      <h2>Final Result</h2>
+      <div class="score" id="scorePercent">0%</div>
+      <p id="scoreMessage"></p>
+      <div class="result-grid">
+        <div class="result-box"><strong id="rTotal">0</strong><span>Total</span></div>
+        <div class="result-box"><strong id="rCorrect">0</strong><span>Correct</span></div>
+        <div class="result-box"><strong id="rWrong">0</strong><span>Wrong</span></div>
+        <div class="result-box"><strong id="rUnanswered">0</strong><span>Unanswered</span></div>
+      </div>
+      <button class="btn-primary" id="resultActionBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Review From
+        Top</button>
+    </section>
+  </main>
+
+  <button class="btn-primary float-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
+
+  <script>
+    const examData = [
+      {
+        lecture: 1, title: "Questions related to Lecture 1", topic: "Introduction to Machine Learning, shallow learning, deep learning, supervised learning, and recognition systems.", questions: [
+          { q: "In traditional programming, we have data and ______ run on a computer to produce output.", c: ["Labels", "Program", "Network", "Model"], a: 1, s: ["Final 2025"], sim: "Programming vs ML appears in Lecture 1." },
+          { q: "In machine learning, what was the key step in advancing the recognition system?", c: ["Multi-layer perceptron", "SVM", "Feature extraction", "Classifier"], a: 2, s: ["Final 2025"], sim: "Similar idea appeared in Midterm 2025 and Midterm 2026." },
+          { q: "The general principle of feature representation where all objects of the same class should have similar values is called ______.", c: ["Discriminating", "Robust", "Independent", "Random"], a: 0, s: ["Final 2023"] },
+          { q: "Which type of learning combines labeled and unlabeled data for training?", c: ["Supervised learning", "Unsupervised learning", "Semi-supervised learning", "Reinforcement learning"], a: 2, s: ["Final 2023"] },
+          { q: "Which of the following is NOT a reinforcement learning problem?", c: ["Autonomous driving", "Chess playing", "Image generation", "Robot navigation"], a: 2, s: ["Final 2023"] },
+          { q: "What is the most important step needed to develop a good machine learning model for character recognition?", c: ["Collecting data", "Define rules", "Understand handwriting", "Install Keras"], a: 0, s: ["Final 2023"] },
+          { q: "Which problem caused neural networks to enter an AI winter in the 1970s?", c: ["AND-OR problem", "Linear problem", "Overfitting", "Non-linear problem"], a: 3, s: ["Final 2025"] },
+          { q: "In 2014, Ian Goodfellow introduced ______, a model that enabled the creation of realistic images and more.", c: ["GAN", "CNN", "GoogLeNet", "Autoencoders"], a: 0, s: ["Final 2025"] },
+          { q: "Which of the following best describes deep learning?", c: ["A shallow classifier only", "Multiple layers of nonlinear processing units", "Only linear regression", "A manual feature extractor"], a: 1, s: ["Final 2021"], sim: "Similar idea appeared in Midterm 2026." },
+          { q: "In shallow learning, feature extraction is mainly ______.", c: ["Masked", "Manual", "Recursive", "Randomized"], a: 1, s: ["Midterm 2026"], sim: "Similar idea appeared in Final 2025." },
+          { q: "What is the purpose of the feature extraction step?", c: ["To encode the data", "To delete labels", "To increase bias only", "To stop training"], a: 0, s: ["Midterm 2025"], sim: "Similar idea appeared in Final 2025." },
+          { q: "Detecting edges first, then parts, then objects is an example of ______.", c: ["Label smoothing", "Threshold decay", "Weight freezing", "Feature hierarchy"], a: 3, s: ["Midterm 2026"] },
+          { q: "When deep learning features are extracted from each layer, they are usually extracted ______.", c: ["Manually", "Uniformly", "Hierarchically", "Randomly"], a: 2, s: ["Final 2024"], sim: "Similar idea appeared in Midterm 2026." },
+          { q: "Which architecture is most suitable for recognizing a cat in a photo?", c: ["Multi-layer perceptron", "Convolutional neural network", "Recurrent neural network", "Single perceptron"], a: 1, s: ["Final 2021"], sim: "Similar idea appeared in Midterm 2025." },
+          { q: "What is the primary task of a convolutional neural network in the early recognition slides?", c: ["Object classification", "Machine translation", "Audio compression", "Database sorting"], a: 0, s: ["Midterm 2025"], sim: "Similar idea appeared in Final 2021." },
+          { q: "In machine learning, the computer usually receives data and desired output in order to learn ______.", c: ["A program or rules", "A physical circuit", "A keyboard shortcut", "A fixed database"], a: 0, s: ["With AI"] },
+          { q: "Activity recognition using hand-written rules becomes difficult mainly because real activities are ______.", c: ["Always binary", "Too simple", "Variable and hard to cover manually", "Unrelated to data"], a: 2, s: ["With AI"] },
+          { q: "The main advantage of deep learning over shallow learning is that it can ______.", c: ["Avoid all data", "Learn features directly from data", "Use no parameters", "Use labels only at testing time"], a: 1, s: ["With AI"] },
+          { q: "In supervised learning, each training example is usually paired with ______.", c: ["A correct target or label", "A random number only", "No output at all", "A hidden operating system"], a: 0, s: ["With AI"] },
+          { q: "A regression problem predicts ______.", c: ["Only class names", "A real-valued output", "Only text tokens", "A fixed image size"], a: 1, s: ["With AI"] },
+          { q: "In K-Fold Cross Validation, the dataset is divided into ______.", c: ["Random neurons", "Equal-sized folds", "Hidden layers", "Activation units"], a: 1, s: ["Deep Learning 2026"], sim: "Similar model-evaluation idea added from Deep Learning 2026." }]
+      },
+
+      {
+        lecture: 2, title: "Questions related to Lecture 2", topic: "Neural network basics, artificial neurons, weights, bias, biological analogy, activation functions, and normalization.", questions: [
+          { q: "What is the fundamental unit of a neural network?", c: ["Layers", "Neurons", "Datasets", "Optimizers"], a: 1, s: ["Midterm 2025"] },
+          { q: "What is an artificial neuron?", c: ["A mathematical function that produces an output", "A storage device", "A label encoder only", "A programming language"], a: 0, s: ["Midterm 2025"] },
+          { q: "In a neural network, what is the purpose of the bias term?", c: ["To remove all inputs", "To adjust the output of each neuron", "To make every weight zero", "To create labels"], a: 1, s: ["Midterm 2025"], sim: "Similar idea appeared in Midterm 2026." },
+          { q: "If only the bias changes in a sigmoid neuron, what changes most directly?", c: ["Left-right shift", "Label count", "Output range", "Input scale"], a: 0, s: ["Midterm 2026"], sim: "Similar idea appeared in Midterm 2025." },
+          { q: "In the biological analogy, weights correspond most closely to ______.", c: ["Axons", "Synapses", "Dendrites", "Soma"], a: 1, s: ["Midterm 2026", "Final 2024"], rep: true, note: "Repeated question: appeared in Midterm 2026 and Final 2024." },
+          { q: "What is the function of synapses in biological neurons?", c: ["Generate electrical signals", "Sum up signals", "Convert input to output", "Regulate chemical signal strength"], a: 3, s: ["Final 2025"] },
+          { q: "Which part of a biological neuron processes input signals?", c: ["Axon", "Cell body / Soma", "Dendrite", "Synaptic gap"], a: 1, s: ["Final 2025 Credit"], sim: "Similar biological-neuron idea appeared in Midterm 2026 and Final 2024." },
+          { q: "Which component of a biological neuron is analogous to the activation function in an artificial neuron?", c: ["Dendrites", "Axon", "Soma", "Synapse"], a: 2, s: ["Final 2023"] },
+          { q: "Which activation function works well for multi-class classification?", c: ["ReLU", "Softmax", "Sigmoid", "Tanh"], a: 1, s: ["Final 2025"], sim: "Similar idea appeared in Midterm 2025 and Final 2024." },
+          { q: "In what context is softmax commonly used?", c: ["Binary-only regression", "Multi-class classification problems", "Image resizing", "Weight freezing"], a: 1, s: ["Midterm 2025"], sim: "Similar idea appeared in Final 2025 and Final 2024." },
+          { q: "Which activation is used in the output layer when you have a multi-class classification problem?", c: ["Sigmoid activation", "Softmax activation", "Bias term", "Feedback connection"], a: 1, s: ["Final 2024"], sim: "Similar idea appeared in Midterm 2025 and Final 2025." },
+          { q: "Identify this activation function: φ(V)=Z + 1/(1 + exp(-kV + Y)).", c: ["ReLU function", "Tanh function", "Sigmoid function", "Step function"], a: 2, s: ["Midterm 2025"] },
+          { q: "In logistic regression, what is the equation for the logistic function?", c: ["y=mx+b", "y=1/(1+e^-(mx+b))", "y=max(0,x)", "y=x²"], a: 1, s: ["Midterm 2025"] },
+          { q: "What is the range of the logistic function?", c: ["[-1,1]", "[0,1]", "[0,∞)", "(-∞,∞)"], a: 1, s: ["Midterm 2025"] },
+          { q: "For sigmoid, very large positive or negative inputs usually make the gradient ______.", c: ["Undefined", "Oscillating", "Near zero", "Larger"], a: 2, s: ["Midterm 2026"], sim: "Similar idea appeared in Final 2025." },
+          { q: "If the value of pre-activation is very high or very low and you use the sigmoid function, this will cause ______.", c: ["Bias shifting", "Data overfitting", "Gradient vanishing", "Weight explosion"], a: 2, s: ["Final 2025"], sim: "Similar idea appeared in Midterm 2026." },
+          { q: "Which expression equals sigmoid derivative g'(x)?", c: ["g(x)(1-g(x))", "1-g(x)", "g(x)*x/(1+g(x)^x)", "g(x)^2"], a: 0, s: ["Midterm 2026"] },
+          { q: "What is the derivative of the tanh activation function g(a)?", c: ["g(a)(1-g(a))", "1-g(a)", "1-g(a)²", "1+g(a)²"], a: 2, s: ["Final 2024", "Final 2025"], rep: true, note: "Repeated question: appeared in Final 2024 and Final 2025." },
+          { q: "What is the output range of the tanh activation function?", c: ["0 to 1", "-1 to 0", "-1 to 1", "0 to infinity"], a: 2, s: ["Final 2025 Credit"] },
+          { q: "What advantage does tanh usually have over sigmoid?", c: ["It has no derivative", "It is zero-centered", "It has no parameters", "It always outputs positive values"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "ReLU is defined as ______.", c: ["min(0,a)", "a²", "max(0,a)", "1/(1+e^-a)"], a: 2, s: ["Midterm 2026"] },
+          { q: "What is the result of ReLU on input [5,-4,0,2,-5,9,-1]?", c: ["[5,0,0,2,0,9,0]", "[5,4,0,2,5,9,1]", "[-5,4,0,-2,5,-9,1]", "None of the previous"], a: 0, s: ["Final 2025"] },
+          { q: "A single sigmoid neuron for binary classification is also called ______.", c: ["Autoencoder", "Logistic regressor", "GAN unit", "CNN head"], a: 1, s: ["Midterm 2026"] },
+          { q: "The capacity of a single neuron is similar to ______.", c: ["Logistic regression", "Support vector machine", "Decision stump", "K-means cluster"], a: 0, s: ["Final 2025"] },
+          { q: "Why is depth not useful when all layers are linear?", c: ["Bias disappears", "Composition stays linear", "Gradients explode", "Gradients vanish"], a: 1, s: ["Midterm 2026"] },
+          { q: "Layer normalization differs from batch normalization because it operates on ______.", c: ["Labels only", "Whole dataset", "Individual examples", "Mini-batch mean only"], a: 2, s: ["Midterm 2026"] },
+          { q: "Which architecture is best described as a fully connected layer with SoftMax non-linearity at the output?", c: ["Classification layer", "Convolution layer", "Pooling layer", "Stride layer"], a: 0, s: ["Final 2021"] },
+          { q: "The main role of an activation function is to introduce ______ into the network.", c: ["Non-linearity", "File compression", "External labels", "Database indexing"], a: 0, s: ["With AI"] },
+          { q: "A neuron first computes a weighted sum plus ______ before applying activation.", c: ["Bias", "Image width", "Batch size", "Class count"], a: 0, s: ["With AI"] },
+          { q: "A linear activation function in every layer makes a deep network behave like ______.", c: ["A single linear model", "A GAN", "A sequence model", "An object detector"], a: 0, s: ["With AI"] },
+          { q: "Sigmoid is often suitable for binary classification because it outputs ______.", c: ["A probability-like value between 0 and 1", "Only negative values", "Only integer class IDs", "Feature maps"], a: 0, s: ["With AI"] },
+          { q: "Batch normalization mainly normalizes activations using statistics from ______.", c: ["A mini-batch", "A single label", "Only the final layer", "The test set only"], a: 0, s: ["With AI"] },
+          { q: "Which activation function is often used in the output layer for classification?", c: ["Softmax", "Max pooling", "Dropout", "Flatten"], a: 0, s: ["Deep Learning 2026"], sim: "Similar idea appeared in Midterm 2025, Final 2024, and Final 2025." },
+          { q: "What is the purpose of weights in a MLP (Multi-layer Perceptron)?", c: ["To store images", "To determine the strength of connections", "To reduce dataset size", "To delete neurons"], a: 1, s: ["Deep Learning 2026"], sim: "Similar biological weights/synapses idea appeared in Midterm 2026 and Final 2024." }]
+      },
+
+      {
+        lecture: 3, title: "Questions related to Lecture 3", topic: "Linear regression, logistic regression, cost functions, gradient descent, learning rate, KNN, and classification targets.", questions: [
+          { q: "In a classification problem, the target variable y can take only ______.", c: ["Continuous values", "Discrete values", "Image sizes", "Learning rates"], a: 1, s: ["Midterm 2025"] },
+          { q: "In a regression problem, the target variable is ______.", c: ["Binary", "Real-valued", "Discrete only", "Time-based"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "In linear regression, the main goal of the loss function is to make predictions ______.", c: ["More binary", "Close to targets", "Zero-centered", "Always positive"], a: 1, s: ["Midterm 2026"] },
+          { q: "The cost function formula of linear regression includes ______.", c: ["Sum of h(x)", "Squared differences", "Average similarity", "Product of h(x) and target"], a: 1, s: ["Final 2025"] },
+          { q: "Suppose you have points (1,1), (2,2), (3,3), and θ=0.4. What is the cost for fitting linear regression?", c: ["0.84", "1.25", "1.68", "None of the previous"], a: 0, s: ["Final 2024"] },
+          { q: "What is the name of the cost function commonly used in logistic regression?", c: ["Cross-entropy loss", "Hinge loss", "Absolute difference", "Mean squared error"], a: 0, s: ["Midterm 2025", "Final 2025 Credit"], rep: true, note: "Repeated question: appeared in Midterm 2025 and Final 2025 Credit." },
+          { q: "The cost function used in logistic regression is also called ______.", c: ["Cross-entropy loss", "Pooling loss", "Stride loss", "Latent loss"], a: 0, s: ["Final 2025 Credit"], sim: "Similar idea appeared in Midterm 2025." },
+          { q: "In logistic regression cost, if the true label is 1 and the predicted probability is close to 0, the cost will be ______.", c: ["Zero", "Negative", "Very high", "Unchanged"], a: 2, s: ["Final 2025"] },
+          { q: "In logistic regression, the cost function when y=0 is ______.", c: ["log(1+h(x))", "-log(1+h(x))", "log(h(x))", "-log(1-h(x))"], a: 3, s: ["Final 2024"] },
+          { q: "The logistic regression cost function can be written as ______.", c: ["y log(h(x))+(1-y)log(1-h(x))", "y+h(x)", "x²+y²", "max(0,x)"], a: 0, s: ["Final 2023"] },
+          { q: "Gradient descent is described as moving in which direction?", c: ["Positive gradient", "Zero gradient only", "Negative gradient", "Random direction"], a: 2, s: ["Midterm 2026"] },
+          { q: "The direction in which gradient descent updates model parameters is ______.", c: ["Same as the gradient", "Perpendicular to the gradient", "Random", "Negative of the gradient"], a: 3, s: ["Final 2025 Credit"], sim: "Similar idea appeared in Midterm 2026." },
+          { q: "Gradient descent follows the negative of the gradient iteratively until it reaches ______.", c: ["Global minimum only", "Local minimum", "Local maximum", "Little divergence"], a: 1, s: ["Final 2024"] },
+          { q: "A higher learning rate in gradient descent could lead to ______.", c: ["Convergence failure", "Clustering failure", "Slower learning", "Stable descent"], a: 0, s: ["Final 2025"] },
+          { q: "If the learning rate is too small, ______.", c: ["The algorithm takes much time to converge", "The model has no weights", "The output becomes binary", "The data disappears"], a: 0, s: ["Midterm 2025"] },
+          { q: "A too small learning rate in gradient descent could lead to ______.", c: ["Convergence failure or very slow convergence", "Overfitting optimization only", "Slower learning only", "Good accuracy always"], a: 0, s: ["Final 2025 Credit"], sim: "Similar idea appeared in Midterm 2025." },
+          { q: "What happens if the number of neighbors k is set to 1 in the Nearest Neighbor classifier?", c: ["Sensitive to outliers", "Robust to noisy data", "Higher accuracy always", "Faster training only"], a: 0, s: ["Final 2023"] },
+          { q: "In 10-class multiclass classification, how many one-vs-one logistic regression models are needed?", c: ["1", "10", "45", "Non-applicable"], a: 2, s: ["Final 2024"] },
+          { q: "The hypothesis of linear regression with one variable is usually written as ______.", c: ["hθ(x)=θ0+θ1x", "h(x)=max(0,x)", "h(x)=softmax(x)", "h(x)=x mod y"], a: 0, s: ["With AI"] },
+          { q: "The cost function J(θ) is minimized to choose the best ______.", c: ["Parameters", "Image pixels", "Class names", "Training filenames"], a: 0, s: ["With AI"] },
+          { q: "Logistic regression uses sigmoid mainly to convert a linear score into ______.", c: ["A probability", "A convolution kernel", "A feature map", "A text token"], a: 0, s: ["With AI"] },
+          { q: "If gradient descent oscillates and does not converge, a common cause is ______.", c: ["Learning rate too high", "Too many labels", "No bias in images", "Perfect normalization"], a: 0, s: ["With AI"] },
+          { q: "The target in classification differs from regression because it is usually ______.", c: ["A category/class", "A continuous house price", "A kernel matrix", "A hidden state"], a: 0, s: ["With AI"] },
+          { q: "Gradient Descent updates parameters in which direction?", c: ["Random direction", "Direction of increasing loss", "Direction of decreasing loss", "Fixed direction only"], a: 2, s: ["Deep Learning 2026"], sim: "Similar idea appeared in Midterm 2026 and Final 2025 Credit." },
+          { q: "Which component controls the step size in Gradient Descent?", c: ["Epoch", "Activation function", "Bias", "Learning rate"], a: 3, s: ["Deep Learning 2026"], sim: "Similar learning-rate idea appeared in Midterm 2025 and Final 2025." },
+          { q: "If the learning rate is too high, Gradient Descent may ______.", c: ["Overshoot the minimum", "Converge smoothly", "Stop learning completely", "Remove data"], a: 0, s: ["Deep Learning 2026"], sim: "Similar idea appeared in Final 2025." }]
+      },
+
+      {
+        lecture: 4, title: "Questions related to Lecture 4", topic: "McCulloch-Pitts, Hebb learning, Perceptron, ADALINE, AND/OR logic, and simple neural networks.", questions: [
+          { q: "The earliest artificial neuron mentioned in the history is ______.", c: ["Perceptron", "ResNet", "ADALINE", "McCulloch-Pitts"], a: 3, s: ["Midterm 2026"] },
+          { q: "What is Hebb’s rule of learning?", c: ["The strength of neural connection gets modified accordingly", "Weights are always zero", "Only pooling is updated", "Labels are deleted"], a: 0, s: ["Midterm 2025"] },
+          { q: "The Hebb Net updates weights by multiplying ______.", c: ["Error and input", "Input and target", "Target and output", "Input and bias"], a: 1, s: ["Final 2025"] },
+          { q: "What is the activation function used in Perceptrons?", c: ["Step function", "Softmax only", "Tanh only", "No activation"], a: 0, s: ["Midterm 2025"] },
+          { q: "The activation function for perceptron is a ______.", c: ["Linear identity", "Step function", "Gaussian function", "Pooling function"], a: 1, s: ["Final 2021"], sim: "Similar idea appeared in Midterm 2025." },
+          { q: "For McCulloch-Pitts AND with θ=2 and weights 1,1, when input is (1,0), the output is ______.", c: ["-1", "1", "0", "2"], a: 2, s: ["Midterm 2026"] },
+          { q: "What target should be used when the input is (-1,-1,1) for bipolar OR?", c: ["0", "-1", "1", "None of the previous"], a: 1, s: ["Final 2025"], ctx: "Context from the original exam: Bipolar input data (x1, x2, bias) = (1,1,1), (1,-1,1), (-1,1,1), (-1,-1,1). The target represents the OR operation. Use the learning rule stated in each question." },
+          { q: "Using Hebb Net algorithm, find weights after passing the first input (1,1,1).", c: ["[1,1,1]", "[1,1,-1]", "[0,0,-2]", "None of the previous"], a: 1, s: ["Final 2025"], ctx: "Context from the original exam: Bipolar input data (x1, x2, bias) = (1,1,1), (1,-1,1), (-1,1,1), (-1,-1,1). The target represents the OR operation. Use the learning rule stated in each question." },
+          { q: "Using Hebb Net algorithm, find weights after passing the second input (1,-1,1).", c: ["[1,0,-1]", "[2,0,-1]", "[2,0,0]", "None of the previous"], a: 2, s: ["Final 2025"], ctx: "Context from the original exam: Bipolar input data (x1, x2, bias) = (1,1,1), (1,-1,1), (-1,1,1), (-1,-1,1). The target represents the OR operation. Use the learning rule stated in each question." },
+          { q: "Using Perceptron algorithm for AND data, find pre-activation y_in after passing the first input (1,1,1).", c: ["-1", "0", "0.5", "None of the previous"], a: 2, s: ["Final 2024"], ctx: "Context from the original exam: Binary input data with bias = (1,1,1), (1,0,1), (0,1,1), (0,0,1). The bipolar target represents the AND operation. Learning rate = 1, threshold θ = 0.2, and the initial weights are the ones shown in the original exam." },
+          { q: "Using Perceptron algorithm for AND data, find output y after passing the first input (1,1,1).", c: ["-1", "0", "1", "None of the previous"], a: 2, s: ["Final 2024"], ctx: "Context from the original exam: Binary input data with bias = (1,1,1), (1,0,1), (0,1,1), (0,0,1). The bipolar target represents the AND operation. Learning rate = 1, threshold θ = 0.2, and the initial weights are the ones shown in the original exam." },
+          { q: "Using Perceptron algorithm for AND data, find weights after passing the first input (1,1,1).", c: ["[-1,0,0.5]", "[0,1,1.5]", "[2,1,1.5]", "None of the previous"], a: 1, s: ["Final 2024"], ctx: "Context from the original exam: Binary input data with bias = (1,1,1), (1,0,1), (0,1,1), (0,0,1). The bipolar target represents the AND operation. Learning rate = 1, threshold θ = 0.2, and the initial weights are the ones shown in the original exam." },
+          { q: "Using Perceptron algorithm for AND data, find weights after the first epoch.", c: ["[-1,1,0.5]", "[-1,0,0.5]", "[-1,0,-0.5]", "None of the previous"], a: 1, s: ["Final 2024"], ctx: "Context from the original exam: Binary input data with bias = (1,1,1), (1,0,1), (0,1,1), (0,0,1). The bipolar target represents the AND operation. Learning rate = 1, threshold θ = 0.2, and the initial weights are the ones shown in the original exam." },
+          { q: "What sequence of tasks is used in a perceptron? (1) Initialize weights, (2) move to next input, (3) update weights if prediction mismatches, (4) compute output.", c: ["1,2,3,4", "4,3,2,1", "3,1,2,4", "1,4,3,2"], a: 3, s: ["Final 2021"] },
+          { q: "Which network can easily solve simple nonlinear problems such as XOR?", c: ["Single neuron", "Single-layer perceptron", "Multi-layer perceptron", "Logistic regression"], a: 2, s: ["Final 2024"] },
+          { q: "What is the primary difference between a single-layer neural network and a deep neural network?", c: ["Number of neurons", "Number of layers", "Activation function", "Learning algorithm"], a: 1, s: ["Final 2023"] },
+          { q: "McCulloch-Pitts neurons fire when net input is ______ the threshold.", c: ["Greater than or equal to", "Always less than", "Equal to zero only", "Independent of"], a: 0, s: ["With AI"] },
+          { q: "A decision boundary for a two-input linear neuron is usually a ______.", c: ["Line", "Circle only", "3D video", "Random cloud"], a: 0, s: ["With AI"] },
+          { q: "A perceptron fails on XOR because XOR is ______.", c: ["Not linearly separable", "Always zero", "A regression problem", "A pooling task"], a: 0, s: ["With AI"] },
+          { q: "In simple neural networks, the bias can be treated as a weight from a special unit with constant output ______.", c: ["1", "0", "-10", "Batch size"], a: 0, s: ["With AI"] },
+          { q: "ADALINE differs from a perceptron mainly because it updates weights using ______.", c: ["A continuous linear activation error", "Only max pooling", "Only region proposals", "Only hidden states"], a: 0, s: ["With AI"] },
+          { q: "The hidden layers in a MLP are responsible for ______.", c: ["Printing output only", "Feature learning and pattern extraction", "Storing files", "Compressing images"], a: 1, s: ["Deep Learning 2026"], sim: "Similar MLP/deep-network idea appeared in Final 2023 and Final 2024." }]
+      },
+
+      {
+        lecture: 5, title: "Questions related to Lecture 5", topic: "Backpropagation, chain rule, dropout, momentum, adaptive optimizers, and training workflow.", questions: [
+          { q: "What is the purpose of the chain rule in the backpropagation algorithm?", c: ["To calculate the derivative of the loss with respect to hidden-layer weights", "To resize images", "To create labels", "To remove Softmax"], a: 0, s: ["Midterm 2025"] },
+          { q: "The chain rule is essential in backpropagation because it allows ______.", c: ["Parallel weight updates", "Batch normalization", "Random dropout", "Composing derivatives"], a: 3, s: ["Final 2025 Credit"], sim: "Similar idea appeared in Midterm 2025." },
+          { q: "Backpropagation is the transmission of error back through the network to adjust ______.", c: ["Targets", "Inputs", "Weights", "Outputs"], a: 2, s: ["Final 2021"] },
+          { q: "What is the main goal of the forward step in backpropagation?", c: ["Update weights", "Calculate gradients", "Compute activations", "Propagate errors"], a: 2, s: ["Final 2025"] },
+          { q: "In which step are network weights updated during backpropagation?", c: ["Forward step", "Backward step", "Pre-activation step", "Initialization step"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "In backpropagation, the error signal δ between output and hidden layer is based on ______.", c: ["Derivative of activation function", "Derivative of loss function", "Both a and b", "None of the previous"], a: 2, s: ["Final 2024"] },
+          { q: "What is dropout mainly used to reduce?", c: ["Training time", "Complexity", "Memory usage", "Overfitting"], a: 3, s: ["Midterm 2026"], sim: "Similar idea appeared in Midterm 2025 and Final 2024." },
+          { q: "Which technique randomly selects a subset of the training data or network units to prevent overfitting?", c: ["Dropout", "Softmax", "Stride", "Padding"], a: 0, s: ["Midterm 2025"], sim: "Similar idea appeared in Midterm 2026." },
+          { q: "The concept of dropout is used to reduce overfitting by ______.", c: ["Altering the network structure", "Normalizing neurons", "Expanding the training data", "Adding noise to the data only"], a: 0, s: ["Final 2024"] },
+          { q: "The structure of the network is changed in each training iteration when using ______.", c: ["Learning rate schedules", "Batch normalization", "Dropout", "Stochastic gradient descent"], a: 2, s: ["Final 2023", "Final 2025 Credit"], rep: true, note: "Repeated question: appeared in Final 2023 and Final 2025 Credit." },
+          { q: "In SGD with momentum, what does momentum add?", c: ["Second derivatives", "Extra hidden units", "Random noise", "Previous update fraction"], a: 3, s: ["Midterm 2026"] },
+          { q: "What does momentum in SGD help with?", c: ["Decrease dropout", "Smoothing learning", "Weight regularization", "Reduce overfitting"], a: 1, s: ["Final 2025"] },
+          { q: "It accumulates gradients from past iterations to overcome slow convergence in gradient descent.", c: ["Momentum term", "Adagrad", "RMSprop", "Adam"], a: 0, s: ["Final 2023", "Final 2025 Credit"], rep: true, note: "Repeated optimizer idea appeared in Final 2023 and Final 2025 Credit." },
+          { q: "The optimizer that keeps track of the summation of squared gradients is ______.", c: ["Momentum", "Adagrad", "Adam", "Dropout"], a: 1, s: ["Midterm 2025"] },
+          { q: "A modification of SGD that uses a decay factor to apply moving averages of squared gradients is called ______.", c: ["Momentum term", "Adagrad", "Adam", "RMSprop"], a: 3, s: ["Final 2024"] },
+          { q: "The RMSprop algorithm stabilizes learning by using ______.", c: ["Adaptive learning rates", "Sum of gradients only", "Momentum decay only", "Feature extraction"], a: 0, s: ["Final 2025"] },
+          { q: "What does compile() do in Keras?", c: ["Start training", "Validation split", "Training configuration", "Test predictions"], a: 2, s: ["Oral & Practical 2026"] },
+          { q: "Which command removes the last added layer in Keras?", c: ["model.remove()", "model.summary()", "model.pop()", "model.last()"], a: 2, s: ["Oral & Practical 2026"] },
+          { q: "Why use keras.Sequential([...])?", c: ["Build layer stack", "Load dataset", "Train batches", "Order samples"], a: 0, s: ["Oral & Practical 2026"] },
+          { q: "One complete pass over all training samples during training is called ______.", c: ["Learning scheduling", "Iteration cycle", "Batch size", "Epoch"], a: 3, s: ["Final 2025"] },
+          { q: "In batch mode training, gradients are calculated using ______.", c: ["All training examples in an epoch", "Only one pixel", "Only the bias unit", "Only future tokens"], a: 0, s: ["With AI"] },
+          { q: "Online or stochastic training updates parameters using ______.", c: ["One example or a small mini-batch", "Only all test samples", "Only validation labels", "No gradients"], a: 0, s: ["With AI"] },
+          { q: "Dropout helps generalization because it prevents neurons from ______.", c: ["Co-adapting too strongly", "Having inputs", "Using activation functions", "Producing outputs"], a: 0, s: ["With AI"] },
+          { q: "Backpropagation computes gradients efficiently by moving from ______.", c: ["Output layer back to earlier layers", "Input image to file explorer", "Dataset labels to database only", "Pooling to padding only"], a: 0, s: ["With AI"] },
+          { q: "A validation split is mainly used to estimate performance on ______.", c: ["Data not used directly for weight updates", "The same batch only", "The optimizer code", "The bias term"], a: 0, s: ["With AI"] },
+          { q: "In Stochastic Gradient Descent, parameters are updated ______.", c: ["After processing the entire dataset", "After every training example", "Once per epoch only", "Randomly without data"], a: 1, s: ["Deep Learning 2026"], sim: "Similar stochastic/online update idea appeared in With AI practice." },
+          { q: "SGD with Momentum helps to ______.", c: ["Slow down training", "Ignore gradients", "Accelerate convergence", "Remove weights"], a: 2, s: ["Deep Learning 2026"], sim: "Similar idea appeared in Midterm 2026 and Final 2025." },
+          { q: "Which algorithm is commonly used to train MLPs?", c: ["Bubble Sort", "Backpropagation", "Binary Search", "DFS"], a: 1, s: ["Deep Learning 2026"], sim: "Similar backpropagation idea appeared in Midterm 2025 and Final 2021." },
+          { q: "In CNNs, epochs refer to ______.", c: ["Number of filters", "Full passes through the dataset", "Image channels", "Hidden neurons only"], a: 1, s: ["Deep Learning 2026"], sim: "Similar epoch question appeared in Final 2025." },
+          { q: "Which of the following helps prevent overfitting?", c: ["Dropout", "Convolution", "Flattening", "Padding"], a: 0, s: ["Deep Learning 2026"], sim: "Similar idea appeared in Midterm 2025, Midterm 2026, and Final 2024." }]
+      },
+
+      {
+        lecture: 6, title: "Questions related to Lecture 6", topic: "CNN fundamentals, convolution, filters, padding, stride, pooling, parameter sharing, flattening, image scaling, and convolution calculations.", questions: [
+          { q: "What is a kernel/filter in a CNN?", c: ["A matrix convolved with input data to produce a feature map", "A final class label", "A database index", "A loss optimizer"], a: 0, s: ["Midterm 2025"] },
+          { q: "CNNs have ______ parameters compared to fully connected networks with many hidden units.", c: ["More", "Fewer", "Equal", "Roughly equal"], a: 1, s: ["Final 2021"] },
+          { q: "Parameter sharing means that a feature detector useful in one part of an image is probably useful in another part.", c: ["Convolution", "Pooling", "Stride", "Parameter sharing"], a: 3, s: ["Final 2021"] },
+          { q: "If we are filtering with a stride of 2, this means the box moves by ______.", c: ["Sharing", "Stride", "Pooling", "Convolution"], a: 1, s: ["Final 2021"] },
+          { q: "In CNN, what happens when stride increases?", c: ["Padding increases", "Smaller output", "Smaller filter size", "Same size"], a: 1, s: ["Oral & Practical 2026"] },
+          { q: "What does stride=(2,2) reduce?", c: ["Label dimension", "Channel depth", "Filter size", "Feature-map size"], a: 3, s: ["Oral & Practical 2026"] },
+          { q: "What does padding='same' preserve?", c: ["Filter weights", "Feature-map size", "Class labels", "Dense inputs"], a: 1, s: ["Oral & Practical 2026"] },
+          { q: "A convolution where output size is less than input size is called ______.", c: ["Valid convolution", "Same convolution", "Equal convolution", "Invalid convolution"], a: 0, s: ["Final 2021"] },
+          { q: "A pooling layer down-samples its input by making it k times smaller.", c: ["Convolution", "Pooling", "Stride", "Fully connected"], a: 1, s: ["Final 2021"] },
+          { q: "Pooling layers reduce dimensions by combining neuron clusters, typically 2x2, into a single neuron.", c: ["Convolution layers", "Pooling layers", "Dense layers", "Embedding layers"], a: 1, s: ["Midterm 2025"] },
+          { q: "In CNN, what does pooling mainly improve?", c: ["Color depth", "Prediction quality", "Classification accuracy only", "Translation robustness"], a: 3, s: ["Oral & Practical 2026"] },
+          { q: "Which operation converts images to vectors?", c: ["argmax()", "CustomDense()", "Average()", "Flatten()"], a: 3, s: ["Oral & Practical 2026"] },
+          { q: "What does layers.Dense(2, activation='relu') add?", c: ["Fully connected layer", "Pooling layer", "Flatten layer", "Depth layer"], a: 0, s: ["Oral & Practical 2026"] },
+          { q: "Why divide an image by 255?", c: ["Encode pixels", "Scale pixels", "Resize image", "Count batches"], a: 1, s: ["Oral & Practical 2026"] },
+          { q: "What does np.arange(0,10,3) return?", c: ["3,6,9,12", "0,1,2,3", "0,3,6,9", "0,10,3"], a: 2, s: ["Oral & Practical 2026"] },
+          { q: "Which code selects the first matrix column?", c: ["mat[:,0]", "mat[0,:]", "mat[0,0]", "mat[:-0]"], a: 0, s: ["Oral & Practical 2026"] },
+          { q: "If a CNN layer has 10 filters, each of size 3x3x3, how many trainable parameters are there including bias?", c: ["200", "180", "280", "290"], a: 2, s: ["Final 2021"] },
+          { q: "Convolving a 7x7 matrix with a 3x3 filter, stride=2, padding=0 gives output size ______.", c: ["4x4", "5x5", "6x6", "3x3"], a: 3, s: ["Final 2021"] },
+          { q: "Consider a 3x3 image and kernel from Final 2024. Compute convolution when stride=2 and padding=1.", c: ["[5 1; 4 -4]", "[5 3; 4 6]", "[5 0; 0 -3]", "None of the previous"], a: 0, s: ["Final 2024"], ctx: "Context from the original exam: 3x3 image = [[5,3,1],[4,7,9],[4,2,3]] and kernel K = [[1,0],[0,-1]]. Use the stride and padding stated in each question." },
+          { q: "Consider a 3x3 image and kernel from Final 2024. Compute convolution when stride=1 and padding=0.", c: ["[2 -6; -2 4]", "[2 6; -2 -4]", "[-2 -6; 2 4]", "None of the previous"], a: 0, s: ["Final 2024"], ctx: "Context from the original exam: 3x3 image = [[5,3,1],[4,7,9],[4,2,3]] and kernel K = [[1,0],[0,-1]]. Use the stride and padding stated in each question." },
+          { q: "Compute the max-pooling result for Final 2024 when filter size is 2x2 and stride=1.", c: ["[5 9; 7 9]", "[7 7; 9 9]", "[5 7; 7 9]", "None of the previous"], a: 3, s: ["Final 2024"], ctx: "Context from the original exam: 3x3 image = [[5,3,1],[4,7,9],[4,2,3]] and kernel K = [[1,0],[0,-1]]. Use the stride and padding stated in each question." },
+          { q: "Apply ReLU activation to the convolution output computed in Final 2024 Question 18.", c: ["[2 0; 0 4]", "[0 0; 2 4]", "[2 6; 0 0]", "None of the previous"], a: 2, s: ["Final 2024"], ctx: "Context from the original exam: 3x3 image = [[5,3,1],[4,7,9],[4,2,3]] and kernel K = [[1,0],[0,-1]]. Use the stride and padding stated in each question." },
+          { q: "Compute the convolution operation for Final 2025 Credit when stride=1 and padding=0.", c: ["[-3 -1; 3 -4]", "[3 1; 5 -2]", "[3 1; -5 2]", "None of the previous"], a: 2, s: ["Final 2025 Credit"], ctx: "Context from the original exam: 3x3 image = [[9,4,6],[2,6,3],[8,7,4]] and kernel K = [[1,0],[0,-1]] after the convolution flip shown in the exam. Use the stride and padding stated in each question." },
+          { q: "Compute the convolution operation for Final 2025 Credit when stride=3 and padding=1.", c: ["[-9 0; 0 4]", "[-9 0; -8 6]", "[9 0; 0 7]", "None of the previous"], a: 0, s: ["Final 2025 Credit"], ctx: "Context from the original exam: 3x3 image = [[9,4,6],[2,6,3],[8,7,4]] and kernel K = [[1,0],[0,-1]] after the convolution flip shown in the exam. Use the stride and padding stated in each question." },
+          { q: "Compute max-pooling for Final 2025 Credit when filter size is 2x2 and stride=1.", c: ["[9]", "[9 6; 8 7]", "[9 6; 6 4]", "None of the previous"], a: 1, s: ["Final 2025 Credit"], ctx: "Context from the original exam: 3x3 image = [[9,4,6],[2,6,3],[8,7,4]] and kernel K = [[1,0],[0,-1]] after the convolution flip shown in the exam. Use the stride and padding stated in each question." },
+          { q: "Compute the convolution operation for Final 2025 when stride=1 and padding=0.", c: ["[-3 -1; 3 -4]", "[3 1; -3 -4]", "[-3 -1; 3 4]", "None of the previous"], a: 0, s: ["Final 2025"], ctx: "Context from the original exam: 3x3 image = [[2,6,4],[3,5,7],[5,0,9]] and kernel K = [[-1,0],[0,1]]. Use the stride and padding stated in each question." },
+          { q: "Compute the convolution operation for Final 2025 when stride=3 and padding=1.", c: ["[-2 0; -5 -4]", "[-2 0; 1 5]", "[-2 0; 0 9]", "None of the previous"], a: 0, s: ["Final 2025"], ctx: "Context from the original exam: 3x3 image = [[2,6,4],[3,5,7],[5,0,9]] and kernel K = [[-1,0],[0,1]]. Use the stride and padding stated in each question." },
+          { q: "Compute the max-pooling result for Final 2025 when filter size is 2x2 and stride=1.", c: ["[5 9; 5 9]", "[6 7; 5 9]", "[6 6; 7 9]", "None of the previous"], a: 1, s: ["Final 2025"], ctx: "Context from the original exam: 3x3 image = [[2,6,4],[3,5,7],[5,0,9]] and kernel K = [[-1,0],[0,1]]. Use the stride and padding stated in each question." },
+          { q: "Batch normalization in CNN is used to ______.", c: ["Reduce overfitting only", "Increase filters", "Speed training", "Reduce depth"], a: 2, s: ["Final 2025 Credit"] },
+          { q: "Which layer in CNN extracts high-level features from the input data?", c: ["Activation layer", "Convolutional layer", "Pooling layer", "Flatten layer"], a: 1, s: ["Final 2023"] },
+          { q: "Transpose convolution output size usually ______.", c: ["Increases spatial size", "Decreases size", "Same size", "Unexpected size"], a: 0, s: ["Final 2025 Credit"] },
+          { q: "Compute transpose convolution output for input [0 1;2 3] and kernel [4 1;2 3] with stride=1.", c: ["14", "[0 4 1; 8 16 6; 4 12 9]", "[0 4 1; 8 12 3; 4 6 9]", "Other value"], a: 1, s: ["Final 2024"], ctx: "Context from the original exam: Transpose convolution uses input [[0,1],[2,3]] and kernel [[4,1],[2,3]] with stride = 1." },
+          { q: "The local connectivity idea in CNNs means each neuron connects to ______.", c: ["A small region of the input", "Every image in the dataset", "Only the label vector", "The optimizer state"], a: 0, s: ["With AI"] },
+          { q: "Padding is commonly used to control ______.", c: ["Output spatial size", "Number of classes only", "Learning-rate schedule", "GAN loss"], a: 0, s: ["With AI"] },
+          { q: "Max pooling keeps the ______ value in each local window.", c: ["Largest", "Smallest", "Average label", "Random"], a: 0, s: ["With AI"] },
+          { q: "Flatten is usually needed before feeding convolutional feature maps into ______.", c: ["Dense layers", "Padding", "Stride", "Kernel flipping only"], a: 0, s: ["With AI"] },
+          { q: "In image preprocessing, scaling pixel values helps training by making inputs ______.", c: ["Smaller and normalized", "Always binary", "Without channels", "Without labels"], a: 0, s: ["With AI"] },
+          { q: "CNNs are mainly used for ______.", c: ["Text compression", "Image processing", "Audio editing", "Spreadsheet analysis"], a: 1, s: ["Deep Learning 2026"], sim: "Similar CNN image-recognition idea appeared in Midterm 2025 and Final 2021." },
+          { q: "What is the purpose of a convolution operation in CNNs?", c: ["To reduce image size", "To remove labels", "To detect features", "To increase progress"], a: 2, s: ["Deep Learning 2026"], sim: "Similar kernel/filter idea appeared in Midterm 2025." },
+          { q: "Which of the following is commonly used as an activation function in CNNs?", c: ["ReLU", "SQL", "XML", "HTTP"], a: 0, s: ["Deep Learning 2026"], sim: "Similar ReLU idea appeared in Midterm 2026 and Final 2025." },
+          { q: "Which layer reduces the spatial dimensions of data?", c: ["Convolutional layer", "Pooling layer", "Fully connected layer", "Flatten layer"], a: 1, s: ["Deep Learning 2026"], sim: "Similar pooling dimension-reduction idea appeared in Midterm 2025 and Final 2021." },
+          { q: "Which layer is the core building block of a CNN?", c: ["Pooling layer", "Dense layer", "Convolutional layer", "Dropout layer"], a: 2, s: ["Deep Learning 2026"], sim: "Similar convolutional-layer feature extraction idea appeared in Final 2023." },
+          { q: "What is stride in CNN?", c: ["Number of neurons", "Step size of filter movement", "Learning rate", "Batch size"], a: 1, s: ["Deep Learning 2026"], sim: "Similar stride idea appeared in Final 2021 and Oral & Practical 2026." },
+          { q: "What is the typical size of a CNN filter?", c: ["Very large", "Infinite", "Small (e.g., 3x3)", "Zero"], a: 2, s: ["Deep Learning 2026"], sim: "Similar 3x3/VGG filter idea appeared in Final 2023 and Final 2021." },
+          { q: "Zero padding adds ______.", c: ["Lines around image borders", "Random values", "Zeros around image borders", "Colors around image borders"], a: 2, s: ["Deep Learning 2026"], sim: "Similar padding idea appeared in Oral & Practical 2026." },
+          { q: "Which layer converts 2D feature maps into 1D vectors?", c: ["Pooling", "Flatten", "Dropout", "Batch normalization"], a: 1, s: ["Deep Learning 2026"], sim: "Similar Flatten question appeared in Oral & Practical 2026." },
+          { q: "What is a filter in CNN?", c: ["A database", "A kernel used for feature extraction", "A programming language", "A compression tool"], a: 1, s: ["Deep Learning 2026"], sim: "Similar kernel/filter question appeared in Midterm 2025." },
+          { q: "Increasing stride usually ______.", c: ["Increases output size", "Reduces output size", "Removes activation", "Increases channels"], a: 1, s: ["Deep Learning 2026"], sim: "Similar idea appeared in Oral & Practical 2026." },
+          { q: "Fully connected layers are usually placed ______.", c: ["At the beginning", "In the middle only", "At the end", "Outside the network"], a: 2, s: ["Deep Learning 2026"], sim: "Similar CNN architecture/classification-layer idea appeared in Final 2021." },
+          { q: "Feature maps are generated after ______.", c: ["Convolution operation", "Image deletion", "Compression", "Encryption"], a: 0, s: ["Deep Learning 2026"], sim: "Similar convolution feature-map idea appeared in Midterm 2025." }]
+      },
+
+      {
+        lecture: 7, title: "Questions related to Lecture 7", topic: "CNN architectures: LeNet, AlexNet, ZFNet, VGG, GoogLeNet/Inception, Xception, ResNet, DenseNet, and transfer learning.", questions: [
+          { q: "Which CNN architecture was designed for handwritten digit recognition?", c: ["AlexNet", "LeNet-5", "ResNet", "DenseNet"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "Which CNN architecture won the ImageNet Large Scale Visual Recognition Challenge in 2012?", c: ["LeNet", "ResNet", "AlexNet", "GoogLeNet"], a: 2, s: ["Final 2023", "Final 2024", "Final 2021"], rep: true, note: "Repeated question: appeared in Final 2021, Final 2023, and Final 2024." },
+          { q: "Which architecture first introduced ReLU and GPU training?", c: ["LeNet-5", "Inception", "AlexNet", "VGGNet"], a: 2, s: ["Final 2025"] },
+          { q: "What helped AlexNet overcome overfitting?", c: ["Dropout", "ReLU", "Batch norm", "Smaller filter size"], a: 0, s: ["Final 2025 Credit"] },
+          { q: "The numbers of layers in LeNet and AlexNet are respectively ______.", c: ["4,7", "5,8", "7,11", "11,22"], a: 1, s: ["Final 2024"] },
+          { q: "ZFNet is similar to AlexNet but changed CONV1 filter size from 11x11 stride 4 to ______.", c: ["3x3", "5x5", "7x7", "9x9"], a: 2, s: ["Final 2024"] },
+          { q: "Why does VGG stack two 3x3 convolutions?", c: ["Wider receptive field", "More rich features", "Increase depth information", "Reduce training time"], a: 1, s: ["Oral & Practical 2026"] },
+          { q: "Which filter size is commonly used in the VGG architecture?", c: ["1x1", "3x3", "5x5", "7x7"], a: 1, s: ["Final 2023"] },
+          { q: "How many layers does the smallest VGG network consist of?", c: ["5", "8", "16", "18"], a: 2, s: ["Final 2023"] },
+          { q: "Two consecutive 3x3 convolution layers have an effective receptive field of ______.", c: ["5x5", "3x3", "7x7", "6x6"], a: 0, s: ["Final 2021"] },
+          { q: "Which CNN architecture first introduced bottleneck layers to reduce computation?", c: ["DenseNet", "GoogLeNet", "AlexNet", "VGGNet"], a: 1, s: ["Final 2025"] },
+          { q: "Inception module consists of ______.", c: ["1x1 filters", "3x3 filters", "5x5 filters", "All the previous"], a: 3, s: ["Final 2021"] },
+          { q: "What is the basic building block of GoogLeNet architecture?", c: ["Convolutional block", "Inception module", "Dense block", "Residual block"], a: 1, s: ["Final 2023"] },
+          { q: "Why does Inception use auxiliary classifiers?", c: ["Reduce parameters", "Remove Softmax", "Help gradients", "Replace pooling"], a: 2, s: ["Oral & Practical 2026"] },
+          { q: "Xception is based on ______.", c: ["Residual blocks", "Dense connections", "Large kernels", "Depthwise separable convolution"], a: 3, s: ["Final 2025"] },
+          { q: "Xception modified depthwise separable convolution by making ______ convolution followed by ______ convolution.", c: ["Residual, normal", "2D, 1D", "Depthwise, pointwise", "Pointwise, depthwise"], a: 3, s: ["Final 2024"] },
+          { q: "Which architecture uses skipping connections to enable training hundreds of layers?", c: ["SkippingNet", "ResNet", "Inception v2", "Inception v3"], a: 1, s: ["Final 2025"] },
+          { q: "What is the main idea of the ResNet architecture?", c: ["Batch normalization", "Skipping connections", "Factorize convolutions", "Inception module"], a: 1, s: ["Final 2024"] },
+          { q: "What is the common module behind ResNet architecture?", c: ["Convolutional block", "Object detection", "Improving NLP tasks", "Residual block"], a: 3, s: ["Final 2023"] },
+          { q: "What was the primary motivation behind developing the ResNet architecture?", c: ["Solving vanishing gradient", "Solving overfitting", "Solving slow training", "Solving image scaling"], a: 0, s: ["Final 2023"] },
+          { q: "Layers inside the DenseBlock of DenseNet model receive inputs from ______.", c: ["Only input layer", "Random layers", "Only previous layer", "All previous layers"], a: 3, s: ["Final 2025 Credit"] },
+          { q: "Each layer gets input from previous layers' output feature maps in ______.", c: ["ResNet", "DenseNet", "Xception", "LeNet"], a: 1, s: ["Final 2021"] },
+          { q: "Factorizing convolutions into smaller convolutions to optimize and reduce parameters is associated with ______.", c: ["Inception v1", "Inception v2", "Inception v3", "GoogLeNet only"], a: 2, s: ["Final 2021"] },
+          { q: "Transfer learning reuses ______.", c: ["Pre-trained models", "Random weights", "Untrained models", "Models built from scratch only"], a: 0, s: ["Final 2025"] },
+          { q: "BERT is presented as an example of using ______.", c: ["Hebb learning", "Clustering", "Transfer learning", "Reinforcement only"], a: 2, s: ["Midterm 2026"], sim: "Transfer-learning idea also appears in Final 2025." },
+          { q: "VGG mainly uses small filters repeatedly to increase depth while controlling ______.", c: ["Parameters", "Class names", "Image labels", "GAN noise"], a: 0, s: ["With AI"] },
+          { q: "A residual connection lets a layer learn the ______ from the previous layer.", c: ["Residual", "File name", "Image label only", "Batch size"], a: 0, s: ["With AI"] },
+          { q: "DenseNet encourages feature reuse by connecting each layer to ______.", c: ["All earlier layers", "Only the output label", "The GPU driver", "The loss title"], a: 0, s: ["With AI"] },
+          { q: "AlexNet was important historically because it showed deep CNNs could perform very well on ______.", c: ["ImageNet image classification", "Only text generation", "Only speech tagging", "Database search"], a: 0, s: ["With AI"] },
+          { q: "Auxiliary classifiers in deep CNNs can improve training by providing extra ______.", c: ["Gradient signals", "Image padding", "Final labels only", "Pooling windows"], a: 0, s: ["With AI"] },
+          { q: "AlexNet won which competition in 2012?", c: ["FIFA Cup", "Robotics Contest", "Kaggle Finance", "ImageNet competition"], a: 3, s: ["Deep Learning 2026"], sim: "Similar AlexNet/ImageNet question appeared in Final 2021, Final 2023, and Final 2024." },
+          { q: "Transfer learning means ______.", c: ["Transferring files", "Using a pre-trained model for a new task", "Changing operating systems", "Copying datasets"], a: 1, s: ["Deep Learning 2026"], sim: "Similar transfer-learning idea appeared in Final 2025 and Midterm 2026." },
+          { q: "Which dataset is famous for image recognition?", c: ["MNIST", "ExcelData", "SQLSet", "HTTPData"], a: 0, s: ["Deep Learning 2026"], sim: "MNIST appears with LeNet-5 in the CNN architectures lecture." },
+          { q: "Data augmentation helps by ______.", c: ["Reducing training data", "Increasing dataset variety", "Deleting labels", "Reducing accuracy"], a: 1, s: ["Deep Learning 2026"], sim: "Similar AlexNet regularization/data augmentation idea appears in Lecture 7." }]
+      },
+
+      {
+        lecture: 8, title: "Questions related to Lecture 8", topic: "Object detection, localization, R-CNN, Fast R-CNN, Faster R-CNN, YOLO, Mask R-CNN, segmentation, and FCNs.", questions: [
+          { q: "Why is multi-object detection harder?", c: ["Fixed output", "Variable outputs", "Loss function", "Shared features"], a: 1, s: ["Oral & Practical 2026"] },
+          { q: "In computer vision tasks, what does image classification primarily predict?", c: ["Bounding boxes", "Pixel labels", "Object location", "Category label"], a: 3, s: ["Final 2025"] },
+          { q: "We want to just assign a label to the input image. This task is called ______.", c: ["Image classification", "Image segmentation", "Object detection", "Localization"], a: 0, s: ["Final 2021"] },
+          { q: "Which is detecting and distinguishing each distinct object of interest in an image?", c: ["Semantic segmentation", "Object detection only", "Instance segmentation", "Classification + Localization"], a: 2, s: ["Final 2021"] },
+          { q: "What task needs both class label and bounding box?", c: ["Image classification", "Object detection", "Image generation", "Speech recognition"], a: 1, s: ["Final 2023"] },
+          { q: "What does object detection output?", c: ["Labels only", "Bounding boxes", "Segmentation masks", "Feature maps"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "What do region proposals find?", c: ["Likely object boxes", "Sliding windows", "Object masks", "Fixed-size boxes"], a: 0, s: ["Oral & Practical 2026"] },
+          { q: "Find 'blobby' image regions that are likely to contain objects.", c: ["Sliding window", "Bounding box", "RoI Pool", "Region proposals"], a: 3, s: ["Final 2021"] },
+          { q: "Region proposals help to ______.", c: ["Classify objects only", "Segment pixels", "Suggest object areas", "Resize images"], a: 2, s: ["Final 2025 Credit"] },
+          { q: "R-CNN first scans the input image for possible objects using an algorithm called Selective Search.", c: ["CNN", "R-CNN", "Faster R-CNN", "Mask R-CNN"], a: 1, s: ["Final 2021"] },
+          { q: "Which classifier does R-CNN use for object detection?", c: ["Logistic regression", "Selective search", "SVM classifier", "Softmax classifier"], a: 2, s: ["Final 2025"] },
+          { q: "Jointly training the CNN, classifier, and bounding box regressor in a single model is ______.", c: ["Fast R-CNN", "R-CNN", "CNN", "SVM"], a: 0, s: ["Final 2021"] },
+          { q: "How many loss functions are used in Fast R-CNN?", c: ["1", "2", "3", "Depends on input image"], a: 1, s: ["Final 2024"] },
+          { q: "A neural network that predicts proposal regions from features to detect objects is ______.", c: ["Fast R-CNN", "Faster R-CNN", "R-CNN", "YOLO"], a: 1, s: ["Final 2023"] },
+          { q: "YOLO splits an image into a grid and creates bounding boxes for detection.", c: ["Fast R-CNN", "Faster R-CNN", "R-CNN", "YOLO"], a: 3, s: ["Final 2024"] },
+          { q: "Mask R-CNN uses ______ for better mask prediction.", c: ["Max Pool", "RoI Pool", "RoI Align", "Region Proposals"], a: 2, s: ["Final 2024"] },
+          { q: "What is the main objective of Fully Convolutional Networks (FCN)?", c: ["Semantic segmentation", "Object detection", "Image classification", "Instance segmentation"], a: 0, s: ["Final 2023"] },
+          { q: "Skip connections in Fully Convolutional Networks help ______.", c: ["Reduce parameters", "Recover details", "Increase depth only", "Normalize features"], a: 1, s: ["Final 2025"] },
+          { q: "Classification plus localization differs from classification because it also predicts ______.", c: ["Object position / box coordinates", "Only a single class label", "A language token", "GAN noise"], a: 0, s: ["With AI"] },
+          { q: "Semantic segmentation assigns a class label to each ______.", c: ["Pixel", "Optimizer", "Training epoch", "Hidden state"], a: 0, s: ["With AI"] },
+          { q: "Instance segmentation separates ______.", c: ["Different objects of the same class", "Only background pixels", "Only class scores", "Only learning rates"], a: 0, s: ["With AI"] },
+          { q: "Faster R-CNN improves R-CNN by using a network to generate ______.", c: ["Region proposals", "Random labels", "Audio samples", "Hidden gates"], a: 0, s: ["With AI"] },
+          { q: "YOLO is known for object detection because it predicts boxes and classes in ______.", c: ["One pass", "A separate model per object", "Only after manual labeling", "No grid"], a: 0, s: ["With AI"] }]
+      },
+
+      {
+        lecture: 9, title: "Questions related to Lecture 9", topic: "RNNs, sequence data, many-to-one/many-to-many, language modeling, vanishing/exploding gradients, and sequence applications.", questions: [
+          { q: "RNN is a type of neural network with a single input and multiple outputs. An example is image captioning. This is ______.", c: ["One to One", "One to Many", "Many to One", "Many to Many"], a: 1, s: ["Final 2021"] },
+          { q: "Which problem can be represented by a Many-to-One RNN?", c: ["Sentiment analysis", "Image captioning", "Machine translation", "Video activity recognition"], a: 0, s: ["Final 2024"] },
+          { q: "Which of the following is an example of a Many-to-Many RNN?", c: ["Sentiment analysis", "Image captioning", "Machine translation", "Language model only"], a: 2, s: ["Final 2025 Credit"] },
+          { q: "Which problem can be represented by Many-to-Many RNN?", c: ["Image classification", "Object detection", "Speech-to-text", "Handwriting generation"], a: 2, s: ["Final 2023"] },
+          { q: "In sequential data tasks, which task involves generating the rest of a sequence from only part of it?", c: ["Sequence Reproduction", "Data Augmentation", "Sequence Recognition", "Temporal Association"], a: 0, s: ["Final 2025"] },
+          { q: "Which of the following is a task for classifying words in text, such as people, organizations, locations, and dates?", c: ["Contextual embedding", "Question answering", "Part-of-speech tagging", "Named entity recognition"], a: 3, s: ["Final 2023"] },
+          { q: "Bidirectional RNNs are more suitable for ______.", c: ["Sentiment classification", "Language modeling", "Speech-to-text", "Handwriting generation"], a: 0, s: ["Final 2023"] },
+          { q: "Exploding gradients can cause ______.", c: ["Model simplicity", "Overfitting", "Fast convergence", "Unstable training"], a: 3, s: ["Final 2025"] },
+          { q: "When gradients become too small, parameter updates become insignificant. This is called ______.", c: ["Gradient descent", "Exploding gradient", "Vanishing gradient", "Long-term dependency problem only"], a: 2, s: ["Final 2021"] },
+          { q: "Why can vanilla RNNs NOT handle long-term dependencies effectively?", c: ["Large datasets", "Overfitting", "Shared weights", "Vanishing gradients"], a: 3, s: ["Final 2025 Credit"] },
+          { q: "In an RNN, the current output depends on current input and ______.", c: ["Previous hidden state", "Only final labels", "Only image width", "GAN discriminator"], a: 0, s: ["With AI"] },
+          { q: "A language model predicts ______.", c: ["The next word/token", "Only bounding boxes", "Only pixel masks", "Only filter size"], a: 0, s: ["With AI"] },
+          { q: "Gradient clipping is commonly used to reduce the effect of ______.", c: ["Exploding gradients", "Data labels", "Pooling windows", "Sigmoid range"], a: 0, s: ["With AI"] },
+          { q: "In one-to-many sequence modeling, one input can produce ______.", c: ["A sequence output", "No output", "Only a scalar target", "Only a class index"], a: 0, s: ["With AI"] },
+          { q: "Sequence tagging gives an output label for ______.", c: ["Each input token", "Only the first token", "Only the last image", "No input"], a: 0, s: ["With AI"] },
+          { q: "RNNs are mainly designed for ______.", c: ["Sequential data", "Spatial data", "Numerical tables only", "Static images only"], a: 0, s: ["Deep Learning 2026"], sim: "Similar RNN sequence-data idea appeared in Final 2021 and Final 2024." },
+          { q: "What makes RNNs different from traditional neural networks?", c: ["They have no weights", "They use memory from previous inputs", "They only process images", "They cannot learn patterns"], a: 1, s: ["Deep Learning 2026"], sim: "Similar previous-hidden-state idea appears in the RNN lecture." },
+          { q: "Which activation function is commonly used in RNN hidden layers?", c: ["Tanh", "SQL", "XML", "JPEG"], a: 0, s: ["Deep Learning 2026"], sim: "Similar RNN hidden-state activation idea appears in Lecture 9." },
+          { q: "Which of the following is true about standard RNNs?", c: ["They share weights across time steps", "They cannot remember previous inputs", "They only work with images", "They require no training"], a: 0, s: ["Deep Learning 2026"], sim: "Similar recurrent-weight idea appears in Lecture 9." },
+          { q: "Which of the following tasks can RNNs perform?", c: ["Speech recognition", "Machine translation", "Text prediction", "All of the mentioned"], a: 3, s: ["Deep Learning 2026"], sim: "Similar RNN applications appeared in Lecture 9 and Lecture 10." },
+          { q: "What is a major limitation of standard RNNs?", c: ["Difficulty learning long-term dependencies", "Inability to process sequences", "Lack of neurons", "No activation functions"], a: 0, s: ["Deep Learning 2026"], sim: "Similar vanishing-gradient/long-term-dependency idea appeared in Final 2021 and Final 2025 Credit." },
+          { q: "Bidirectional RNNs process data ______.", c: ["Only forward", "Only backward", "In both forward and backward directions", "Randomly"], a: 2, s: ["Deep Learning 2026"], sim: "Similar bidirectional RNN idea appeared in Final 2023." }]
+      },
+
+      {
+        lecture: 10, title: "Questions related to Lecture 10", topic: "LSTM, GRU, memory cells, gates, and RNN applications.", questions: [
+          { q: "The LSTM has the ability to remove or add information to ______.", c: ["Cell memory", "Hidden states only", "Input gate", "Update gate"], a: 0, s: ["Final 2024"] },
+          { q: "In LSTM, the ______ controls how much new information should be kept.", c: ["Forget gate", "Input gate", "Reset gate", "Update gate"], a: 1, s: ["Final 2025"] },
+          { q: "In LSTM, which gate assesses what parts of memory need to be exposed in the current hidden state?", c: ["Forget Gate", "Reset Gate", "Update Gate", "Output Gate"], a: 3, s: ["Final 2024", "Final 2025 Credit"], rep: true, note: "Repeated question: appeared in Final 2024 and Final 2025 Credit." },
+          { q: "In LSTM, the ______ assesses what parts of the memory need to be exposed in the current hidden state.", c: ["Reset Gate", "Output Gate", "Update Gate", "Forget Gate"], a: 1, s: ["Final 2025 Credit"], sim: "Same LSTM output-gate idea appeared in Final 2024." },
+          { q: "Forget Gate determines how much previous memory state is ______.", c: ["Generated", "Reset", "Retained", "Updated"], a: 2, s: ["Final 2023"] },
+          { q: "In GRU, the ______ determines how much of the previous hidden state should be ignored in favor of the new input.", c: ["Forget Gate", "Reset Gate", "Update Gate", "Output Gate"], a: 1, s: ["Final 2024", "Final 2025 Credit"], rep: true, note: "Repeated question: appeared in Final 2024 and Final 2025 Credit." },
+          { q: "The GRU has the ability to remove or add information to ______.", c: ["Input gate", "Update gate", "Hidden states", "Cell memory"], a: 2, s: ["Final 2025"] },
+          { q: "Which gate in GRU determines how much of the previous memory state should be retained?", c: ["Forget Gate", "Reset Gate", "Update Gate", "Output Gate"], a: 2, s: ["Final 2023"] },
+          { q: "The main difference between LSTM and GRU is that LSTM has a separate ______.", c: ["Cell memory", "Softmax table", "Region proposal", "Patch embedding"], a: 0, s: ["With AI"] },
+          { q: "Gates in LSTM and GRU are usually controlled by ______ activations.", c: ["Sigmoid", "ReLU only", "Softmax over classes", "Max pooling"], a: 0, s: ["With AI"] },
+          { q: "The LSTM forget gate looks at the input and previous hidden state to decide ______.", c: ["What old memory to keep or forget", "The number of filters", "The class label only", "The image width"], a: 0, s: ["With AI"] },
+          { q: "The GRU update gate decides how to mix old hidden state with ______.", c: ["New candidate memory", "A convolution kernel", "A bounding box", "A GAN sample"], a: 0, s: ["With AI"] },
+          { q: "LSTM and GRU were designed mainly to handle ______ better than vanilla RNNs.", c: ["Long-term dependencies", "Only image padding", "Only KNN outliers", "Only pooling windows"], a: 0, s: ["With AI"] },
+          { q: "LSTM stands for ______.", c: ["Long Short-Term Memory", "Large System Transfer Method", "Logical Sequential Training Model", "Linear State Time Machine"], a: 0, s: ["Deep Learning 2026"], sim: "LSTM is covered in Lecture 10." },
+          { q: "Which of the following is an advanced form of RNN?", c: ["CNN", "GAN", "LSTM", "SVM"], a: 2, s: ["Deep Learning 2026"], sim: "Similar LSTM/GRU advanced RNN idea appears in Lecture 10." },
+          { q: "GRU stands for ______.", c: ["General Recurrent Unit", "Gated Recurrent Unit", "Gradient Reduction Unit", "None"], a: 1, s: ["Deep Learning 2026"], sim: "GRU is covered in Lecture 10." },
+          { q: "Which issue do LSTMs help solve?", c: ["File corruption", "Vanishing gradient problem", "Color mismatch", "Data duplication"], a: 1, s: ["Deep Learning 2026"], sim: "Similar vanilla-RNN limitation question appeared in Final 2025 Credit." }]
+      },
+
+      {
+        lecture: 11, title: "Questions related to Lecture 11", topic: "Transformers, attention, Q/K/V, self-attention, multi-head attention, positional encodings, masking, FFN, BERT, GPT, and ViT.", questions: [
+          { q: "Which model revolutionized natural language processing?", c: ["DBN", "Transformer", "LSTM", "SVM"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "What is the main purpose of attention in Transformers?", c: ["Introduce non-linearity", "Solve overfitting", "Reduce parameters", "Focus relevant content"], a: 3, s: ["Final 2025 Credit"] },
+          { q: "For a word trying to find which surrounding words matter most, which vector acts like the search request?", c: ["Position", "Value", "Query", "Bias"], a: 2, s: ["Midterm 2026"] },
+          { q: "In Transformer attention, what represents embeddings of input without context?", c: ["Queries", "Keys", "Values", "Attentions"], a: 0, s: ["Final 2024"] },
+          { q: "Attention for each word embedding is computed based on dot product of ______.", c: ["Key and queries", "Query and keys", "Query and values", "Key and values"], a: 1, s: ["Final 2024"] },
+          { q: "What operation is used to compute similarity in Transformer attention?", c: ["Softmax", "Squared difference", "Dot product", "Multiplication only"], a: 2, s: ["Final 2025 Credit"], sim: "Similar idea appeared in Final 2023 and Final 2024." },
+          { q: "To compute similarities between keys and queries, we apply ______.", c: ["Word embeddings", "Softmax", "Weighted sum", "Dot product"], a: 3, s: ["Final 2023"] },
+          { q: "In attention as a soft lookup table, the surrounding embeddings or context of the input token are represented by ______.", c: ["Queries", "Keys", "Values", "Attentions"], a: 1, s: ["Final 2023"] },
+          { q: "Which component is added to input embeddings to give Transformer a notion of sequence order?", c: ["Layer norm", "Positional encoding", "FFN", "Token masking"], a: 1, s: ["Midterm 2026", "Final 2024"], rep: true, note: "Repeated question: appeared in Midterm 2026 and Final 2024." },
+          { q: "To inherit notion of order in Transformer model, we add ______.", c: ["Self-attention", "Masked attention", "Encoder", "Positional encoding"], a: 3, s: ["Final 2024"], sim: "Same exact idea appeared in Midterm 2026." },
+          { q: "What limitation of self-attention is addressed by positional encoding?", c: ["Multiple self-attention", "No order information", "Words meaning", "Looking at future words"], a: 1, s: ["Final 2025 Credit"] },
+          { q: "Self-attention alone is mostly weighted averaging. What is added to introduce nonlinearity?", c: ["Sigmoid head", "Token masking", "Extra keys", "Position-wise FFN"], a: 3, s: ["Midterm 2026"] },
+          { q: "Why are feed-forward networks added after the attention mechanism in Transformers?", c: ["Add nonlinearities", "Add positional information", "Normalization", "Remove outliers"], a: 0, s: ["Final 2025"] },
+          { q: "Which component of a Transformer model is responsible for generating text based on the input?", c: ["Decoder", "Encoder", "Feed-forward network", "Positional encodings"], a: 0, s: ["Final 2023"] },
+          { q: "BERT architecture is best described as ______.", c: ["Encoder-decoder", "Decoder-only", "Encoder-only", "Unsupervised only"], a: 2, s: ["Final 2025"] },
+          { q: "The BERT model is pre-trained based on predicting ______.", c: ["Sentence tagging", "Answers to questions", "Masked words", "Sentence classification"], a: 2, s: ["Final 2024"] },
+          { q: "Which architecture type do GPT models follow?", c: ["Decoder-only", "Encoder-only", "Encoder-decoder", "Unsupervised"], a: 0, s: ["Final 2025 Credit"] },
+          { q: "Vision Transformer treats images as ______.", c: ["Vectors", "Region proposals", "Set of pixels only", "Patch sequences"], a: 3, s: ["Final 2025"] },
+          { q: "When using self-attention in language modeling, future words are prevented by ______.", c: ["Layer normalization", "Masking the future", "RoI Align", "Batch normalization"], a: 1, s: ["Final 2025 Credit"], sim: "Similar Transformer masking concept from Lecture 11." },
+          { q: "In attention, values are combined using ______.", c: ["Attention weights", "Pooling filters", "KNN neighbors", "GAN noise"], a: 0, s: ["With AI"] },
+          { q: "Multi-head attention is useful because different heads can attend to ______.", c: ["Different relationships or positions", "Only one label", "Only one pixel", "Only the final loss"], a: 0, s: ["With AI"] },
+          { q: "Add & Norm in Transformer diagrams refers to residual connection plus ______.", c: ["Layer normalization", "Max pooling", "Dropout only", "Region proposal"], a: 0, s: ["With AI"] },
+          { q: "Causal masking in decoder self-attention prevents a token from seeing ______.", c: ["Future tokens", "Past tokens", "Its own embedding", "The vocabulary"], a: 0, s: ["With AI"] },
+          { q: "A Vision Transformer first divides the image into patches and then treats them like ______.", c: ["A sequence of tokens", "A pooling window", "A recurrent gate", "A discriminator"], a: 0, s: ["With AI"] }]
+      },
+
+      {
+        lecture: 12, title: "Questions related to Lecture 12", topic: "Deep generative modeling, latent variables, autoencoders, VAEs, GANs, generator and discriminator.", questions: [
+          { q: "Which component of GANs is responsible for classifying real and fake data samples?", c: ["Adversarial loss", "Neural network", "Discriminator", "Classifier"], a: 2, s: ["Final 2023", "Final 2024"], rep: true, note: "Repeated question: appeared in Final 2023 and Final 2024." },
+          { q: "Which component of GANs is responsible for producing realistic data samples?", c: ["Generator", "GAN training", "Data augmentation", "Conditional GAN"], a: 0, s: ["Final 2023"] },
+          { q: "To train GAN, it is based on ______ loss.", c: ["Minimizing only", "Minimize and maximize", "Mean square", "Maximizing only"], a: 1, s: ["Final 2023"] },
+          { q: "In generative models, ______ represent the compressed or generative factors of data.", c: ["Decoder", "Encoder", "Autoencoders", "Latent variables"], a: 3, s: ["Final 2024"] },
+          { q: "VAEs infer the probability distributions of compressed representations that could have generated the observed data.", c: ["GANs", "VAEs", "Autoencoders", "Latent variables"], a: 1, s: ["Final 2024"] },
+          { q: "In autoencoders, the loss function compares ______.", c: ["Input vs Hidden", "Input vs Output", "Encoder vs Decoder", "Output vs Label"], a: 1, s: ["Final 2025"] },
+          { q: "The GAN discriminator output for real samples is usually ______.", c: ["1", "0", "-1", "Random only"], a: 0, s: ["Final 2023"], sim: "Similar GAN discriminator idea appeared in Final 2024." },
+          { q: "The GAN generator takes as input ______.", c: ["Random noise vector z", "Only class labels", "Only real images", "Only gradients"], a: 0, s: ["Final 2023"], sim: "Similar GAN generator idea appeared in Final 2023 and Lecture 12." },
+          { q: "The goal of generative modeling is to learn a model distribution close to ______.", c: ["The data distribution", "The optimizer name", "The batch number", "The image width only"], a: 0, s: ["With AI"] },
+          { q: "An autoencoder consists mainly of an encoder and a ______.", c: ["Decoder", "Region proposal", "GRU reset gate", "Softmax query"], a: 0, s: ["With AI"] },
+          { q: "The bottleneck layer in an autoencoder forces the network to learn ______.", c: ["A compressed representation", "A larger image only", "Future tokens", "Only labels"], a: 0, s: ["With AI"] },
+          { q: "A VAE differs from a standard autoencoder because it learns ______ over latent variables.", c: ["Probability distributions", "Only deterministic class IDs", "Only bounding boxes", "Only pooling indices"], a: 0, s: ["With AI"] },
+          { q: "The two players in a GAN are the generator and the ______.", c: ["Discriminator", "Encoder", "KNN classifier", "Forget gate"], a: 0, s: ["With AI"] }]
+      }
+    ];
+
+    const state = { answers: {}, currentQ: 0 };
+    const letters = ["A", "B", "C", "D"];
+
+    function sourceBadges(q) {
+      const sourceText = (q.s || []).map(x => {
+        const cls = x === "With AI" ? "tag ai" : "tag";
+        return `<span class="${cls}">Source: ${escapeHtml(x)}</span>`;
+      }).join("");
+      const rep = q.rep ? `<span class="tag repeat">Repeated question</span>` : "";
+      const sim = q.sim ? `<span class="tag similar">${escapeHtml(q.sim)}</span>` : "";
+      const note = q.note ? `<span class="tag repeat">${escapeHtml(q.note)}</span>` : "";
+      return sourceText + rep + note + sim;
+    }
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[m]));
+    }
+    function render() {
+      const nav = document.getElementById("lectureNav");
+      const exam = document.getElementById("exam");
+      nav.innerHTML = examData.map((sec, i) => `<a href="#" onclick="goToLecture(${i}); return false;">Lecture ${sec.lecture}</a>`).join("");
+      let globalIndex = 0;
+      exam.innerHTML = examData.map(sec => {
+        const cards = sec.questions.map(q => {
+          const id = `q${globalIndex++}`;
+          const contextBox = q.ctx ? `<div class="context-box"><strong>Original exam context:</strong><br>${escapeHtml(q.ctx).replace(/\n/g, "<br>")}</div>` : "";
+          return `<article class="question-card ${q.rep ? "repeated" : ""}" id="${id}" data-qid="${id}">
+        ${contextBox}
+        <div class="q-top">
+          <p class="q-title">${escapeHtml(q.q)}</p>
+        </div>
+        <div class="source-row">${sourceBadges(q)}</div>
+        <div class="choices">
+          ${q.c.map((choice, i) => `<button class="choice" type="button" data-qid="${id}" data-choice="${i}">
+            <span class="letter">${letters[i]}</span><span>${escapeHtml(choice)}</span>
+          </button>`).join("")}
+        </div>
+        <div class="feedback" id="${id}-feedback"></div>
+      </article>`;
+        }).join("");
+        return `<section class="section" id="lecture-${sec.lecture}">
+      <div class="section-head">
+        <h2>${escapeHtml(sec.title)}</h2>
+        <p>${escapeHtml(sec.topic)} <strong>${sec.questions.length} questions</strong></p>
+      </div>
+      ${cards}
+      <div class="separator"></div>
+    </section>`;
+      }).join("");
+      document.querySelectorAll(".choice").forEach(btn => btn.addEventListener("click", onChoose));
+      document.getElementById("heroTotal").textContent = totalQuestions();
+      updateProgress();
+      showCurrentQuestion();
+    }
+
+    function showCurrentQuestion() {
+      document.querySelectorAll(".question-card").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+
+      const currentId = `q${state.currentQ}`;
+      const card = document.getElementById(currentId);
+      if (card) {
+        card.classList.add("active");
+        card.closest(".section").classList.add("active");
+      }
+
+      const examNav = document.getElementById("examNav");
+      if (examNav) examNav.style.display = "flex";
+
+      const prevBtn = document.getElementById("prevQBtn");
+      const nextBtn = document.getElementById("nextQBtn");
+      const resetBtn = document.getElementById("resetCurrentBtn");
+
+      const info = getCurrentLectureInfo();
+      if (info) {
+        if (prevBtn) prevBtn.disabled = (state.currentQ === info.startGlobalQ);
+        if (nextBtn) {
+          nextBtn.disabled = false;
+          if (state.currentQ === info.endGlobalQ) {
+            nextBtn.textContent = "Finish Lecture";
+            nextBtn.onclick = finishLecture;
+          } else {
+            nextBtn.textContent = "Next Question";
+            nextBtn.onclick = nextQ;
+          }
+        }
+      }
+      if (resetBtn) resetBtn.disabled = !state.answers.hasOwnProperty(currentId);
+
+      const sect = document.querySelector(".section.active");
+      if (sect) {
+        const y = sect.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }
+
+    function nextQ() {
+      if (state.currentQ < totalQuestions() - 1) {
+        state.currentQ++;
+        showCurrentQuestion();
+      }
+    }
+
+    function prevQ() {
+      if (state.currentQ > 0) {
+        state.currentQ--;
+        showCurrentQuestion();
+      }
+    }
+
+    function resetCurrentQuestion() {
+      const qid = `q${state.currentQ}`;
+      if (!(qid in state.answers)) return;
+
+      delete state.answers[qid];
+
+      const card = document.getElementById(qid);
+      if (card) {
+        card.classList.remove("locked", "unanswered");
+        card.querySelectorAll(".choice").forEach(b => {
+          b.disabled = false;
+          b.removeAttribute("aria-disabled");
+          b.classList.remove("selected", "correct", "wrong");
+        });
+
+        const fb = document.getElementById(`${qid}-feedback`);
+        if (fb) {
+          fb.className = "feedback";
+          fb.textContent = "";
+        }
+      }
+
+      updateProgress();
+      showCurrentQuestion();
+    }
+
+    function goToLecture(secIdx) {
+      document.getElementById("result").classList.remove("show");
+      let g = 0;
+      for (let i = 0; i < secIdx; i++) {
+        g += examData[i].questions.length;
+      }
+      state.currentQ = g;
+      showCurrentQuestion();
+    }
+
+    function getCurrentLectureInfo() {
+      let g = 0;
+      for (let i = 0; i < examData.length; i++) {
+        const len = examData[i].questions.length;
+        if (state.currentQ >= g && state.currentQ < g + len) {
+          return {
+            lectureIndex: i,
+            lectureData: examData[i],
+            startGlobalQ: g,
+            endGlobalQ: g + len - 1,
+            localQ: state.currentQ - g,
+            totalLocal: len
+          };
+        }
+        g += len;
+      }
+    }
+    function flatQuestions() {
+      const arr = [];
+      examData.forEach(sec => sec.questions.forEach(q => arr.push(q)));
+      return arr;
+    }
+    function totalQuestions() { return flatQuestions().length }
+    function getQuestionIndex(qid) { return Number(qid.replace("q", "")) }
+    function lockQuestion(card) {
+      card.classList.add("locked");
+      card.querySelectorAll(".choice").forEach(b => {
+        b.disabled = true;
+        b.setAttribute("aria-disabled", "true");
+      });
+    }
+    function unlockAllQuestions() {
+      document.querySelectorAll(".question-card").forEach(card => card.classList.remove("locked"));
+      document.querySelectorAll(".choice").forEach(b => {
+        b.disabled = false;
+        b.removeAttribute("aria-disabled");
+      });
+    }
+    function applyAnswer(qid, selected, force = false) {
+      if (!force && Object.prototype.hasOwnProperty.call(state.answers, qid)) return;
+      const idx = getQuestionIndex(qid);
+      const q = flatQuestions()[idx];
+      state.answers[qid] = selected;
+      const card = document.getElementById(qid);
+      card.classList.remove("unanswered");
+      card.querySelectorAll(".choice").forEach(b => {
+        b.disabled = false;
+        const choice = Number(b.dataset.choice);
+        b.classList.remove("selected", "correct", "wrong");
+        if (choice === q.a) b.classList.add("correct");
+        if (choice === selected) {
+          b.classList.add("selected");
+          if (selected !== q.a) b.classList.add("wrong");
+        }
+      });
+      const fb = document.getElementById(`${qid}-feedback`);
+      if (selected === q.a) {
+        fb.className = "feedback good";
+        fb.textContent = `Correct. Answer: ${letters[q.a]} — ${q.c[q.a]}`;
+      } else {
+        fb.className = "feedback bad";
+        fb.textContent = `Wrong. Correct answer: ${letters[q.a]} — ${q.c[q.a]}`;
+      }
+      lockQuestion(card);
+    }
+    function onChoose(e) {
+      const btn = e.currentTarget;
+      const qid = btn.dataset.qid;
+      const selected = Number(btn.dataset.choice);
+      applyAnswer(qid, selected, false);
+      updateProgress();
+    }
+    function solveAll() {
+      const info = getCurrentLectureInfo();
+      if (!info) return;
+      for (let i = info.startGlobalQ; i <= info.endGlobalQ; i++) {
+        applyAnswer(`q${i}`, flatQuestions()[i].a, true);
+      }
+      updateProgress();
+      finishLecture();
+    }
+    function updateProgress() {
+      const info = getCurrentLectureInfo();
+      if (!info) return;
+
+      let answeredLocal = 0;
+      for (let i = info.startGlobalQ; i <= info.endGlobalQ; i++) {
+        if (`q${i}` in state.answers) answeredLocal++;
+      }
+      const pctLocal = Math.round((answeredLocal / info.totalLocal) * 100);
+
+      document.getElementById("progressFill").style.width = pctLocal + "%";
+      document.getElementById("progressText").textContent = `Lecture ${info.lectureData.lecture} Progress: Answered ${answeredLocal} of ${info.totalLocal} questions (${pctLocal}%)`;
+
+      const answeredGlobal = Object.keys(state.answers).length;
+      document.getElementById("heroDone").textContent = answeredGlobal;
+
+      const resetBtn = document.getElementById("resetCurrentBtn");
+      if (resetBtn) {
+        resetBtn.disabled = !state.answers.hasOwnProperty(`q${state.currentQ}`);
+      }
+
+      document.querySelectorAll(".nav a").forEach((a, i) => {
+        if (i === info.lectureIndex) {
+          a.style.background = "#3b82f6";
+          a.style.color = "white";
+        } else {
+          a.style.background = "#1e3a8a";
+          a.style.color = "#bfdbfe";
+        }
+      });
+    }
+    function submitExam() {
+      const qs = flatQuestions();
+      let correct = 0, wrong = 0, unanswered = 0;
+      qs.forEach((q, i) => {
+        const key = `q${i}`;
+        if (!(key in state.answers)) unanswered++;
+        else if (state.answers[key] === q.a) correct++;
+        else wrong++;
+      });
+      const total = qs.length;
+      const pct = Math.round((correct / total) * 100);
+      document.getElementById("rTotal").textContent = total;
+      document.getElementById("rCorrect").textContent = correct;
+      document.getElementById("rWrong").textContent = wrong;
+      document.getElementById("rUnanswered").textContent = unanswered;
+      document.getElementById("scorePercent").textContent = pct + "%";
+      let msg = "Keep practicing. Focus on repeated questions and weak lecture sections.";
+      if (pct >= 90) msg = "Excellent performance. You are very ready.";
+      else if (pct >= 75) msg = "Very good. Review mistakes and repeated patterns.";
+      else if (pct >= 60) msg = "Good start. Revise the lectures with the highest mistakes.";
+      document.getElementById("scoreMessage").textContent = msg;
+      const result = document.getElementById("result");
+      result.classList.add("show");
+
+      const resBtn = document.getElementById("resultActionBtn");
+      if (resBtn) {
+        resBtn.textContent = "Review From Top";
+        resBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      result.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function finishLecture() {
+      const info = getCurrentLectureInfo();
+      let correct = 0, wrong = 0, unanswered = 0;
+
+      for (let i = info.startGlobalQ; i <= info.endGlobalQ; i++) {
+        const key = `q${i}`;
+        if (!(key in state.answers)) unanswered++;
+        else if (state.answers[key] === flatQuestions()[i].a) correct++;
+        else wrong++;
+      }
+
+      const pct = Math.round((correct / info.totalLocal) * 100);
+
+      document.getElementById("rTotal").textContent = info.totalLocal;
+      document.getElementById("rCorrect").textContent = correct;
+      document.getElementById("rWrong").textContent = wrong;
+      document.getElementById("rUnanswered").textContent = unanswered;
+      document.getElementById("scorePercent").textContent = pct + "%";
+
+      let msg = "Keep practicing this lecture.";
+      if (pct >= 90) msg = "Excellent! You mastered this lecture.";
+      else if (pct >= 75) msg = "Very good. Review your mistakes.";
+      else if (pct >= 60) msg = "Good start. Revise this topic.";
+      document.getElementById("scoreMessage").textContent = `Lecture ${info.lectureData.lecture} Completed! ` + msg;
+
+      const result = document.getElementById("result");
+      result.classList.add("show");
+
+      const resBtn = document.getElementById("resultActionBtn");
+      if (resBtn) {
+        if (info.lectureIndex < examData.length - 1) {
+          resBtn.textContent = "Start Next Lecture";
+          resBtn.onclick = () => {
+            result.classList.remove("show");
+            goToLecture(info.lectureIndex + 1);
+          };
+        } else {
+          resBtn.textContent = "Finish Complete Exam";
+          resBtn.onclick = () => {
+            result.classList.remove("show");
+            submitExam();
+          };
+        }
+      }
+
+      result.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function showUnanswered() {
+      document.getElementById("result").classList.remove("show");
+      document.querySelectorAll(".question-card").forEach(c => c.classList.remove("unanswered"));
+      const info = getCurrentLectureInfo();
+      if (!info) return;
+      let first = null, count = 0;
+      for (let i = info.startGlobalQ; i <= info.endGlobalQ; i++) {
+        const id = `q${i}`;
+        if (!(id in state.answers)) {
+          const card = document.getElementById(id);
+          if (card) card.classList.add("unanswered");
+          if (first === null) first = i;
+          count++;
+        }
+      }
+      if (first !== null) {
+        state.currentQ = first;
+        showCurrentQuestion();
+      } else {
+        alert(`Great! No unanswered questions in Lecture ${info.lectureData.lecture}.`);
+      }
+    }
+    function resetExam() {
+      if (!confirm("Reset all answers and retake the exam?")) return;
+      state.answers = {};
+      state.currentQ = 0;
+      unlockAllQuestions();
+      document.querySelectorAll(".choice").forEach(b => b.classList.remove("selected", "correct", "wrong"));
+      document.querySelectorAll(".feedback").forEach(f => { f.className = "feedback"; f.textContent = ""; });
+      document.querySelectorAll(".question-card").forEach(c => c.classList.remove("unanswered", "locked"));
+      document.getElementById("result").classList.remove("show");
+      updateProgress();
+      showCurrentQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    document.getElementById("submitBtn").addEventListener("click", submitExam);
+    document.getElementById("solveAllBtn").addEventListener("click", solveAll);
+    document.getElementById("unansweredBtn").addEventListener("click", showUnanswered);
+    document.getElementById("resetBtn").addEventListener("click", resetExam);
+    render();
+  </script>
+
+</body>
+
+</html>
